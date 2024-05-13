@@ -1,0 +1,4 @@
+Flask
+Flask-SQLAlchemy
+prometheus-client
+requests
