@@ -1,0 +1,235 @@
+openapi: 3.0.0
+info:
+  title: Movie API
+  description: RESTful API for managing user movie lists
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000/api
+    description: Local server
+paths:
+  /metrics:
+    get:
+      summary: Get Prometheus metrics
+      operationId: getMetrics
+      responses:
+        '200':
+          description: Prometheus metrics
+  /api/users:
+    post:
+      summary: Create a new user
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Bad request
+    get:
+      summary: Get all users
+      operationId: getUsers
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '404':
+          description: No users found
+  /api/users/{user_id}:
+    get:
+      summary: Get user details
+      operationId: getUserDetails
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserWithMovies'
+        '404':
+          description: User not found
+    put:
+      summary: Update user details
+      operationId: updateUser
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: User details updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+        '400':
+          description: Bad request
+    delete:
+      summary: Delete user
+      operationId: deleteUser
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: User deleted successfully
+        '404':
+          description: User not found
+  /api/users/{user_id}/movies:
+    get:
+      summary: Get user's movies
+      operationId: getUserMovies
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of user's movies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Movie'
+        '404':
+          description: User not found
+  /api/users/{user_id}/movies/{imdb_id}:
+    delete:
+      summary: Delete movie from user's list
+      operationId: deleteMovie
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: imdb_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Movie deleted successfully
+        '404':
+          description: Movie not found
+  /api/docs:
+    get:
+      summary: Get API documentation
+      operationId: getApiDocs
+      responses:
+        '200':
+          description: API documentation
+          content:
+            application/yaml:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: string
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        user_id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+    UserCreate:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+    UserUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+    Movie:
+      type: object
+      properties:
+        imdb_id:
+          type: string
+        title:
+          type: string
+        year:
+          type: string
+    UserWithMovies:
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            movies:
+              type: array
+              items:
+                $ref: '#/components/schemas/Movie'
+x-code-samples:
+  createUser:
+    summary: Create a new user example
+    value:
+      curl -X POST "http://localhost:5000/api/users" -H "Content-Type: application/json" -d '{"name":"John Doe","email":"john@example.com"}'
+  getUsers:
+    summary: Get all users example
+    value:
+      curl -X GET "http://localhost:5000/api/users"
+  getUserDetails:
+    summary: Get user details example
+    value:
+      curl -X GET "http://localhost:5000/api/users/1"
+  updateUser:
+    summary: Update user details example
+    value:
+      curl -X PUT "http://localhost:5000/api/users/1" -H "Content-Type: application/json" -d '{"name":"John Smith","email":"john.smith@example.com"}'
+  deleteUser:
+    summary: Delete user example
+    value:
+      curl -X DELETE "http://localhost:5000/api/users/1"
+  getUserMovies:
+    summary: Get user's movies example
+    value:
+      curl -X GET "http://localhost:5000/api/users/1/movies"
+  deleteMovie:
+    summary: Delete movie from user's list example
+    value:
+      curl -X DELETE "http://localhost:5000/api/users/1/movies/tt1234567"
